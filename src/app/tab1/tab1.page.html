@@ -1,0 +1,41 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      View
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">View</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="timeline">
+        @for(event of timeline; track $index){
+            <div class="event">
+              <ion-icon name="ellipse" class="event-icon" color="primary"></ion-icon>
+              {{event.name}}
+            </div>
+            @for(sub of event.children; track $index){
+              <div class="event sub">
+                <ion-icon name="ellipse" class="event-icon" color="tertiary"></ion-icon>
+                {{sub.name}}
+              </div>
+            }
+            @if(event.children.length > 0){
+              <div class="event end">
+                <ion-icon name="ellipse" class="event-icon" color="danger"></ion-icon>
+                {{event.duration.hours}}:{{event.duration.minutes | number:'2.0-0' }}h since {{event.name}}
+              </div>
+            }
+            
+        } @empty {
+          <ion-item>
+            <ion-label> No events on timeline</ion-label>
+          </ion-item>
+        }
+  </div>
+</ion-content>

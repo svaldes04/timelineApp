@@ -16,3 +16,4 @@ platforms/android/ant-gen
 platforms/android/gen
 platforms/android/out
 platforms/android/build
+.angular/

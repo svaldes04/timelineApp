@@ -1,0 +1,24 @@
+.timeline{
+    padding: 15px;
+}
+.event{
+    padding-bottom: 15px;
+    padding-left: 15px;
+    display: flex;
+    align-items: center;
+    font-size: x-large;
+
+    .event-icon{
+        margin-right: 5px;
+    }
+}
+.sub{
+    padding-left: 50px;
+    font-size: large;
+}
+ion-checkbox{
+    margin-right: 10px;
+}
+.end{
+    font-size: large;
+}
