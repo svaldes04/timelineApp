@@ -14,24 +14,52 @@
   </ion-header>
 
   <div class="timeline">
+    <div class="event">
+      {{startdates[0] | date:'dd MMM, YYYY'}} - {{startdates[0] | date:'hh:mmaa'}}
+    </div>
+    <br>
+      <!-- Change the way these are created: event, sub-event, spacer types from clean list -->
         @for(event of timeline; track $index){
-            <div class="event">
-              <ion-icon name="ellipse" class="event-icon" color="primary"></ion-icon>
-              {{event.name}}
-            </div>
-            @for(sub of event.children; track $index){
+            @if(event.type === "event"){
+              <div class="event">
+                <ion-icon name="ellipse" class="event-icon" color="primary"></ion-icon>
+                {{event.name}}
+              </div>
+              <div class="event event-date">
+                @if($index > 0 && (startdates[$index] | date:'d') !== (startdates[prevParentStartdate($index)] | date:'d') ){
+                  ({{startdates[$index] | date:'dd MMM, YYYY'}})
+                }
+                {{startdates[$index] | date:'shortTime'}} 
+                - 
+                {{datePlusDuration(startdates[$index], event.duration) | date:'shortTime'}}
+                @if((startdates[$index] | date:'d') !== ( datePlusDuration(startdates[$index], event.duration) | date:'d') ){
+                  ({{datePlusDuration(startdates[$index], event.duration) | date:'dd MMM, YYYY'}})
+                }
+              </div>
+            }
+            @if(event.type === "sub-event"){
               <div class="event sub">
                 <ion-icon name="ellipse" class="event-icon" color="tertiary"></ion-icon>
-                {{sub.name}}
+                {{event.name}}
+              </div>
+              <div class="event sub event-date">
+                @if($index > 0 && (startdates[$index] | date:'d') !== (startdates[$index - 1] | date:'d') ){
+                  ({{startdates[$index] | date:'dd MMM, YYYY'}})
+                }
+                {{startdates[$index] | date:'shortTime'}} 
+                - 
+                {{datePlusDuration(startdates[$index], event.duration) | date:'shortTime'}}
+                @if((startdates[$index] | date:'d') !== ( datePlusDuration(startdates[$index], event.duration) | date:'d') ){
+                  ({{datePlusDuration(startdates[$index], event.duration) | date:'dd MMM, YYYY'}})
+                }
               </div>
             }
-            @if(event.children.length > 0){
-              <div class="event end">
-                <ion-icon name="ellipse" class="event-icon" color="danger"></ion-icon>
-                {{event.duration.hours}}:{{event.duration.minutes | number:'2.0-0' }}h since {{event.name}}
+            @if(event.type === "spacer"){
+              <div class="event sub event-date">
+                <ion-icon name="ellipse" class="event-icon" color="tertiary"></ion-icon>
+                ({{event.duration.hours}}:{{event.duration.minutes | number:'2.0-0'}})
               </div>
             }
-            
         } @empty {
           <ion-item>
             <ion-label> No events on timeline</ion-label>

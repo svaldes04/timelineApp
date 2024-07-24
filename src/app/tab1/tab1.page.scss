@@ -2,15 +2,22 @@
     padding: 15px;
 }
 .event{
-    padding-bottom: 15px;
     padding-left: 15px;
     display: flex;
     align-items: center;
     font-size: x-large;
-
+    padding-bottom: 5px;
     .event-icon{
         margin-right: 5px;
     }
+}
+.time{
+    color: rgb(156, 156, 156);
+}
+.event-date{
+    font-size: medium !important;
+    color: rgb(156, 156, 156);
+    padding-bottom: 15px;
 }
 .sub{
     padding-left: 50px;
@@ -18,7 +25,4 @@
 }
 ion-checkbox{
     margin-right: 10px;
-}
-.end{
-    font-size: large;
 }

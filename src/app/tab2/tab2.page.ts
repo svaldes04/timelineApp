@@ -31,26 +31,27 @@ export class Tab2Page {
   isSubModalOpen: boolean;
   selectedEvent: number;
   selectedSubEvent: number;
+  startdate: Date;
 
   // Constructor function
   constructor() {
-    // Data for easy testing --> Usually empty list
     this.timeline = [];
     this.counter = 0;
-    TabsPage.timeline = this.timeline;
+    // TabsPage.timeline = this.timeline;
     this.isModalOpen = false;
     this.isSubModalOpen = false;
     this.selectedEvent = -1;
     this.selectedSubEvent = -1;
+    this.startdate = new Date();
   }
 
   // Add a new event to timeline
   addToTimeline(){
     this.counter+=1;
 
-    var newEvent: TimelineEvent = {
+    let newEvent: TimelineEvent = {
       name: `Event ${this.counter}`,
-      level: 'main',
+      type: 'event',
       duration: {
         hours: 1,
         minutes: 0
@@ -58,16 +59,15 @@ export class Tab2Page {
       children: []
     };
     this.timeline.push(newEvent);
-    
   }
 
   // Add sub event to an event
   addChildEvent(){
     this.counter+=1;
 
-    var newEvent: TimelineEvent = {
+    let newEvent: TimelineEvent = {
       name: `Event ${this.counter}`,
-      level: 'sub',
+      type: 'sub-event',
       duration: {
         hours: 0,
         minutes: 0
@@ -75,7 +75,6 @@ export class Tab2Page {
       children: []
     };
     this.timeline[this.selectedEvent].children.push(newEvent);
-    
   }
 
 
@@ -114,6 +113,12 @@ export class Tab2Page {
   openModal(state: boolean, index: number){
     this.selectedEvent = index;
     this.isModalOpen = true;
+
+    // if last sub-event of selected event's children is spacer, remove it
+    if(this.timeline[this.selectedEvent].children[this.timeline[this.selectedEvent].children.length-1].type === "spacer"){
+      this.timeline[this.selectedEvent].children.pop();
+    }
+
   }
 
   // close sub modal
@@ -128,41 +133,52 @@ export class Tab2Page {
   }
 
   submitChanges(){
-    this.dateMain.confirm();
-    // if minutes is not between 0-59
-    if(this.minutesInput.value as number > 59 || this.minutesInput.value as number < 0){
-      this.minutesInput.value = 0;
-      alert("Please select a valid value for minutes.");
-    // if hours is lower than 0
-    } else if(this.hoursInput.value as number < 0){
-      this.hoursInput.value = 0;
-      alert("Please select a valid value for hours.");
-    } else {
-      this.timeline[this.selectedEvent].name = this.nameInput.value as string;
-      this.timeline[this.selectedEvent].duration.hours = this.hoursInput.value as number;
-      this.timeline[this.selectedEvent].duration.minutes = this.minutesInput.value as number;
-      /*
-      // If date picker is enabled, save date in correct time zone. Else, undefined.
-      if(!this.dateMain.disabled){
-        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const rawDate = new Date(
-          parseInt((this.dateMain.value as string).substring(0,4)),     // year
-          parseInt((this.dateMain.value as string).substring(5,7)) - 1, // month
-          parseInt((this.dateMain.value as string).substring(8,10)),     // day
-          parseInt((this.dateMain.value as string).substring(11,13)),     // hour
-          parseInt((this.dateMain.value as string).substring(14,16))      // minute
-          );
-        const zonedDate = utcToZonedTime(rawDate, userTimeZone);
-        console.log(rawDate);
-        console.log(userTimeZone);
-        console.log(zonedDate);
-        console.log(formatISO(zonedDate));
-        this.timeline[this.selectedEvent].startDate = formatISO(zonedDate);
+    // Check if there's negative values on input
+    if(this.hoursInput.value as number < 0 || this.minutesInput.value as number < 0){
+      alert("A negative value is being input. Please the values for hours and minutes");
+      return;
+    }
 
-      } else {
-        this.timeline[this.selectedEvent].startDate = undefined;
+    // Store user input in a duration object 
+    let eventDuration = {
+      hours: Math.floor(this.hoursInput.value as number),
+      minutes: Math.floor(this.minutesInput.value as number)
+    };
+
+    // Appropiate time format
+    eventDuration = this.cleanDuration(eventDuration);
+
+    // Add duration of child events and store in this variable
+    let childrenDuration = { hours: 0, minutes: 0 };
+    for(let i = 0; i < this.timeline[this.selectedEvent].children.length; i++){
+      childrenDuration.hours += this.timeline[this.selectedEvent].children[i].duration.hours;
+      childrenDuration.minutes += this.timeline[this.selectedEvent].children[i].duration.minutes;
+    }
+
+    // check if sum of child event durations is greater/lesser/equal to parent event duration
+    let minDifference = this.compareDurations( eventDuration, childrenDuration);
+
+    if(minDifference < 0){
+
+      alert("Sum of sub-events take more time than the parent event. Please change the duration of event or sub-events.");
+
+    } else {
+      // Add a wait event until the end of parent event
+      if(minDifference > 0 && this.timeline[this.selectedEvent].children.length > 0){
+        
+        // Create wait event for remaining time
+        let waitEvent: TimelineEvent = {
+          name: ` Spacer `,
+          type: 'spacer',
+          duration: this.cleanDuration({hours: 0, minutes: +minDifference}),
+          children: []
+        };
+        this.timeline[this.selectedEvent].children.push(waitEvent);
+
       }
-      */
+      // Save changes
+      this.timeline[this.selectedEvent].name = this.nameInput.value as string;
+      this.timeline[this.selectedEvent].duration = eventDuration;
       this.closeModal();
       this.timelineEditor.closeOpened();
     }
@@ -170,22 +186,141 @@ export class Tab2Page {
   }
 
   submitSubChanges(){
-    // if minutes is not between 0-59
-    if(this.minutesInputSub.value as number > 59 || this.minutesInputSub.value as number < 0){
-      this.minutesInputSub.value = 0;
-      alert("Please select a valid value for minutes");
-    // if hours is lower than 0
-    } else if(this.hoursInputSub.value as number < 0){
-      this.hoursInputSub.value = 0;
-      alert("Please select a valid value for hours");
-    } else {
-      this.timeline[this.selectedEvent].children[this.selectedSubEvent].name = this.nameInputSub.value as string;
-      this.timeline[this.selectedEvent].children[this.selectedSubEvent].duration.hours = this.hoursInputSub.value as number;
-      this.timeline[this.selectedEvent].children[this.selectedSubEvent].duration.minutes = this.minutesInputSub.value as number;
-      this.closeSubModal();
-      this.timelineEditorSub.closeOpened();
+
+    // Check if there's negative values on input
+    if(this.hoursInputSub.value as number < 0 || this.minutesInputSub.value as number < 0){
+      alert("A negative value is being input. Please the values for hours and minutes");
+      return;
     }
 
+    // Store user input in a duration object 
+    let subeventDuration = {
+      hours: Math.floor(this.hoursInputSub.value as number),
+      minutes: Math.floor(this.minutesInputSub.value as number)
+    };
+
+    // Appropiate time format
+    subeventDuration = this.cleanDuration(subeventDuration);
+
+    // Save changes
+    this.timeline[this.selectedEvent].children[this.selectedSubEvent].name = this.nameInputSub.value as string;
+    this.timeline[this.selectedEvent].children[this.selectedSubEvent].duration = subeventDuration;
+    this.closeSubModal();
+    this.timelineEditorSub.closeOpened();
+  }
+
+  // Saves start date with correct time zone in TabsPage
+  updateDate(){
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const rawDate = new Date(
+      parseInt((this.dateMain.value as string).substring(0,4)),       // year
+      parseInt((this.dateMain.value as string).substring(5,7)) - 1,   // month
+      parseInt((this.dateMain.value as string).substring(8,10)),      // day
+      parseInt((this.dateMain.value as string).substring(11,13)),     // hour
+      parseInt((this.dateMain.value as string).substring(14,16))      // minute
+        );
+    const zonedDate = utcToZonedTime(rawDate, userTimeZone);
+    this.startdate = zonedDate;
+    //console.log(formatISO(zonedDate));
+  }
+
+  // Given a duration, will return duration for the same amount of time ensuring all 'extra' minutes are turned into hours
+  cleanDuration(duration: {hours:number, minutes:number}){
+    let addHours = Math.floor(duration.minutes / 60);
+    let subMinutes = addHours*60;
+    let result = {
+      hours: +duration.hours + +addHours,
+      minutes: +duration.minutes - +subMinutes
+    };
+    return result;
+  }
+
+  // Returns a positive value if d1 represents more time than d2. Returns a negative value if d1 represents less time than d2. Returns 0 if d1 and d2 represent the same time.
+  // This function works even if durations are not clean.
+  compareDurations(d1: {hours:number, minutes:number}, d2: {hours:number, minutes:number}){
+    let minutesD1 = d1.minutes + (d1.hours*60);
+    let minutesD2 = d2.minutes + (d2.hours*60);
+
+    return +minutesD1 - +minutesD2;
+  }
+
+  // Returns given date plus given duration. Duration doesnt need to be clean
+  datePlusDuration(date:Date, duration:{hours:number, minutes:number}){
+    let durationMinutes = +duration.minutes + (+duration.hours*60);
+    return new Date(date.getTime() + durationMinutes*60000);
+  }
+
+  // Returns number of child events excluding end spacers
+  getTrueChildNum(event: TimelineEvent){
+    let result = 0;
+    for(let i = 0; i < event.children.length; i++){
+      if(event.children[i].type ==="sub-event"){
+        result++;
+      }
+    }
+    return result;
+  }
+
+  timelineToEventList(){
+    let result = [];
+    for(let i = 0; i < this.timeline.length; i++){
+      result.push(this.timeline[i]);
+
+      for(let j = 0; j < this.timeline[i].children.length; j++){
+        result.push(this.timeline[i].children[j]);
+      }
+    }
+    console.log(result);
+  }
+
+  loadNewTimeline(){
+    let newTimeline = [];
+    for(let i = 0; i < this.timeline.length; i++){
+      newTimeline.push(this.timeline[i]);
+
+      for(let j = 0; j < this.timeline[i].children.length; j++){
+        newTimeline.push(this.timeline[i].children[j]);
+      }
+    }
+    console.log(newTimeline);
+    TabsPage.timeline = newTimeline;
+
+    let timelineDates = [];
+    let lastSubMin = 0;
+    for(let i = 0; i < this.timeline.length; i++){
+      if( i === 0 ){
+        timelineDates.push(this.startdate);
+      } else if( lastSubMin > 0){
+        timelineDates.push(this.datePlusDuration(timelineDates[timelineDates.length - 1], {hours: 0, minutes: lastSubMin}));
+        lastSubMin = 0;
+      } else {
+        // Adds the time when previous event will end as start time for this event
+        timelineDates.push(this.datePlusDuration(timelineDates[timelineDates.length - 1], this.timeline[i - 1].duration));
+      }
+
+      // Similar logic for adding sub events to timelineDates
+      for(let j = 0; j < this.timeline[i].children.length; j++){
+        if( j === 0) {
+          timelineDates.push(new Date (timelineDates[timelineDates.length - 1].getTime()));
+        } else {
+          timelineDates.push(this.datePlusDuration(timelineDates[timelineDates.length - 1], this.timeline[i].children[j - 1].duration));
+          if( j === (this.timeline[i].children.length - 1)){
+            lastSubMin = this.timeline[i].children[j].duration.minutes + (this.timeline[i].children[j].duration.hours*60)
+          }
+        }
+      }
+    }
+    console.log(timelineDates);
+    TabsPage.startdates = timelineDates;
+  }
+
+  // TODO change start date for sub-events (take parent start date)
+  calculateExpectedStart(timeline: TimelineEvent[], index: number){
+    let result = this.startdate;
+    for(let i = 0; i < index; i++){
+      result = this.datePlusDuration(result, timeline[i].duration);
+    }
+    return result;
   }
 
 }

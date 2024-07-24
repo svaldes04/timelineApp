@@ -1,7 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
 import { TimelineEvent } from '../timeline-event';
-import { Tab1Page } from '../tab1/tab1.page';
-import { Tab2Page } from '../tab2/tab2.page';
 import { IonTabs } from '@ionic/angular';
 
 @Component({
@@ -11,22 +9,23 @@ import { IonTabs } from '@ionic/angular';
 })
 export class TabsPage {
 
-  @ViewChild('myTabs') tabs: IonTabs | undefined;
+  @ViewChild('myTabs') tabs: IonTabs;
 
   static timeline: TimelineEvent[];
+  static startdates: Date[];
 
   constructor() {
-    // Test data
     TabsPage.timeline = [];
+    TabsPage.startdates = [];
   }
 
+  // Saves timeline changes to tab1 when user switches tabs to tab1
   saveChanges(){
     var currentTab = this.tabs.outlet.activatedComponentRef?.instance;
     if(currentTab.id === "tab1"){
       currentTab.timeline = TabsPage.timeline;
+      currentTab.startdates = TabsPage.startdates;
     }
-    console.log(currentTab, currentTab.timeline);
-    // i think we've done it. i can get the tab instance reference
-
-    }
+    // console.log(currentTab, currentTab.timeline);
   }
+}

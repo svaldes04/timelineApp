@@ -20,12 +20,13 @@
 
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime id="datetime" #dateMain></ion-datetime>
+          <ion-datetime id="datetime" #dateMain (ionChange)="updateDate()"></ion-datetime>
         </ng-template>
       </ion-modal>
     </div>
 
     <ion-button id="eventButton" (click)="addToTimeline()">Add event</ion-button>
+    <ion-button id="saveButton" (click)="loadNewTimeline()">Save changes</ion-button>
     <hr style="color: white; background-color: white;">
     <ion-list>
      
@@ -37,7 +38,8 @@
             <ion-item>
               <ion-label>{{ event.name }}</ion-label>
               <ion-label>{{ event.duration.hours }}:{{ event.duration.minutes | number:'2.0-0' }}h</ion-label>
-              <ion-badge slot="end">{{event.children.length}}</ion-badge>
+              <ion-label class="time">{{ calculateExpectedStart(timeline, $index) | date:'shortTime' }}</ion-label>
+              <ion-badge slot="end">{{getTrueChildNum(event)}}</ion-badge>
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
         
@@ -52,7 +54,7 @@
           </ion-item>
         }
 
-        <ion-modal [isOpen]="isModalOpen">
+        <ion-modal [isOpen]="isModalOpen" [canDismiss]="!isModalOpen">
           <ng-template>
             <ion-header>
               <ion-toolbar>
@@ -86,6 +88,7 @@
                         <ion-item>
                           <ion-label>{{ sub.name }}</ion-label>
                           <ion-label>{{ sub.duration.hours }}:{{ sub.duration.minutes | number:'2.0-0' }}h</ion-label>
+                          <ion-label class="time">{{ calculateExpectedStart(timeline[selectedEvent].children, $index) | date:'shortTime' }}</ion-label>
                           <ion-reorder slot="end"></ion-reorder>
                         </ion-item>
                     
@@ -100,7 +103,7 @@
                       </ion-item>
                     }
 
-                    <ion-modal [isOpen]="isSubModalOpen">
+                    <ion-modal [isOpen]="isSubModalOpen" [canDismiss]="!isSubModalOpen">
                       <ng-template>
                         <ion-header>
                           <ion-toolbar>
