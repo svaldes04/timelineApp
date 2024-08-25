@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
-import { TimelineEvent } from '../timeline-event';
-import { TabsPage } from '../tabs/tabs.page';
+import { Component, Input, ViewChild } from '@angular/core';
+import { TimelineEvent } from '../interfaces/timeline-event';
+import { IonToggle } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab1',
@@ -9,9 +9,11 @@ import { TabsPage } from '../tabs/tabs.page';
 })
 export class Tab1Page {
 
+  @ViewChild('uiToggle') uiToggle: IonToggle;
   timeline: TimelineEvent[];
   startdates: Date[];
   id: string;
+  legacyUI = true;
 
   constructor() {
     this.timeline = []
@@ -34,5 +36,9 @@ export class Tab1Page {
     }
     return 0;
   }
+  toggleUI(){
+    this.legacyUI = this.uiToggle.checked;
+  }
+
 
 }

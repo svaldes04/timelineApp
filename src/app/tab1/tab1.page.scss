@@ -1,28 +1,28 @@
-.timeline{
+.timeline.legacy-ui{
     padding: 15px;
-}
-.event{
-    padding-left: 15px;
-    display: flex;
-    align-items: center;
-    font-size: x-large;
-    padding-bottom: 5px;
-    .event-icon{
-        margin-right: 5px;
+    .event{
+        padding-left: 15px;
+        display: flex;
+        align-items: center;
+        font-size: x-large;
+        padding-bottom: 5px;
+        .event-icon{
+            margin-right: 5px;
+        }
+    }
+    .event-date{
+        font-size: medium !important;
+        color: rgb(156, 156, 156);
+        padding-bottom: 15px;
+    }
+    .sub{
+        padding-left: 50px;
+        font-size: large;
     }
 }
 .time{
     color: rgb(156, 156, 156);
 }
-.event-date{
-    font-size: medium !important;
-    color: rgb(156, 156, 156);
-    padding-bottom: 15px;
-}
-.sub{
-    padding-left: 50px;
-    font-size: large;
-}
-ion-checkbox{
-    margin-right: 10px;
+ion-toggle{
+    padding: 10px;
 }

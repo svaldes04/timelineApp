@@ -7,3 +7,11 @@ export interface TimelineEvent {
     },
     children: TimelineEvent[];
   }
+
+export interface newTimelineEvent{
+    name: string,
+    type: string,
+    start: Date,
+    end: Date,
+    children: newTimelineEvent[],
+}

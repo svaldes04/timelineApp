@@ -25,11 +25,11 @@
       </ion-modal>
     </div>
 
-    <ion-button id="eventButton" (click)="addToTimeline()">Add event</ion-button>
-    <ion-button id="saveButton" (click)="loadNewTimeline()">Save changes</ion-button>
+    <ion-button (click)="addToTimeline()">Add event</ion-button>
+    <ion-button class="button" id="saveButton" (click)="loadNewTimeline()">Save changes</ion-button>
     <hr style="color: white; background-color: white;">
     <ion-list>
-     
+    
       <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">
 
         @for(event of timeline; track $index){
@@ -38,7 +38,7 @@
             <ion-item>
               <ion-label>{{ event.name }}</ion-label>
               <ion-label>{{ event.duration.hours }}:{{ event.duration.minutes | number:'2.0-0' }}h</ion-label>
-              <ion-label class="time">{{ calculateExpectedStart(timeline, $index) | date:'shortTime' }}</ion-label>
+              <ion-label class="time">{{ calculateExpectedStart(timeline, $index, startdate) | date:'shortTime' }}</ion-label>
               <ion-badge slot="end">{{getTrueChildNum(event)}}</ion-badge>
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
@@ -56,6 +56,7 @@
 
         <ion-modal [isOpen]="isModalOpen" [canDismiss]="!isModalOpen">
           <ng-template>
+
             <ion-header>
               <ion-toolbar>
                 <ion-title>Edit event</ion-title>
@@ -64,83 +65,85 @@
                 </ion-buttons>
               </ion-toolbar>
             </ion-header>
-            <ion-content class="ion-padding">
-              <ion-item>
-                <ion-input label="Name" [value]="timeline[selectedEvent].name" #nameInput></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-input label="Hours" type="number" [value]="timeline[selectedEvent].duration.hours" #hoursInput></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-input label="Minutes" type="number" [value]="timeline[selectedEvent].duration.minutes" #minutesInput></ion-input>
-              </ion-item>
-              <div class="modal-label"> Sub-events</div>
-              <div class="container">
-                <ion-button id="eventButton" (click)="addChildEvent()">Add sub-event</ion-button>
-                <ion-list>
-                
-                  <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorderSub($any($event))"> <!-- CHANGE -->
 
-                    <!--  TODO: Make better with reorder-group OR create a separe reorder screen -->
-                    @for(sub of timeline[selectedEvent].children; track $index){
-                      <ion-item-sliding #timelineEditorSub>
-                    
+              <ion-content class="ion-padding">
+                <ion-item>
+                  <ion-input label="Name" [value]="timeline[selectedEvent].name" #nameInput></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Hours" type="number" [value]="timeline[selectedEvent].duration.hours" #hoursInput></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Minutes" type="number" [value]="timeline[selectedEvent].duration.minutes" #minutesInput></ion-input>
+                </ion-item>
+                <div class="modal-label"> Sub-events</div>
+                <div class="container">
+                  <ion-button id="eventButton" (click)="addChildEvent()">Add sub-event</ion-button>
+                  <ion-list>
+                  
+                    <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorderSub($any($event))"> <!-- CHANGE -->
+  
+                      <!--  TODO: Make better with reorder-group OR create a separe reorder screen -->
+                      @for(sub of timeline[selectedEvent].children; track $index){
+                        <ion-item-sliding #timelineEditorSub>
+                      
+                          <ion-item>
+                            <ion-label>{{ sub.name }}</ion-label>
+                            <ion-label>{{ sub.duration.hours }}:{{ sub.duration.minutes | number:'2.0-0' }}h</ion-label>
+                            <ion-label class="time">{{ calculateExpectedStart(timeline[selectedEvent].children, $index, calculateExpectedStart(timeline, selectedEvent, startdate)) | date:'shortTime' }}</ion-label>
+                            <ion-reorder slot="end"></ion-reorder>
+                          </ion-item>
+                      
+                          <ion-item-options side="end">
+                            <ion-item-option color="warning" (click)="openSubModal(true, $index)">Edit</ion-item-option>
+                            <ion-item-option color="danger" (click)="deleteSubEvent($index)">Delete</ion-item-option>
+                          </ion-item-options>
+                        </ion-item-sliding>
+                      } @empty {
                         <ion-item>
-                          <ion-label>{{ sub.name }}</ion-label>
-                          <ion-label>{{ sub.duration.hours }}:{{ sub.duration.minutes | number:'2.0-0' }}h</ion-label>
-                          <ion-label class="time">{{ calculateExpectedStart(timeline[selectedEvent].children, $index) | date:'shortTime' }}</ion-label>
-                          <ion-reorder slot="end"></ion-reorder>
+                            <ion-label> No sub-events</ion-label>
                         </ion-item>
-                    
-                        <ion-item-options side="end">
-                          <ion-item-option color="warning" (click)="openSubModal(true, $index)">Edit</ion-item-option>
-                          <ion-item-option color="danger" (click)="deleteSubEvent($index)">Delete</ion-item-option>
-                        </ion-item-options>
-                      </ion-item-sliding>
-                    } @empty {
-                      <ion-item>
-                          <ion-label> No sub-events</ion-label>
-                      </ion-item>
-                    }
+                      }
+  
+                      <ion-modal [isOpen]="isSubModalOpen" [canDismiss]="!isSubModalOpen">
+                        <ng-template>
+                          <ion-header>
+                            <ion-toolbar>
+                              <ion-title>Edit sub-event</ion-title>
+                              <ion-buttons slot="end">
+                                <ion-button (click)="closeSubModal()">Close</ion-button>
+                              </ion-buttons>
+                            </ion-toolbar>
+                          </ion-header>
 
-                    <ion-modal [isOpen]="isSubModalOpen" [canDismiss]="!isSubModalOpen">
-                      <ng-template>
-                        <ion-header>
-                          <ion-toolbar>
-                            <ion-title>Edit sub-event</ion-title>
-                            <ion-buttons slot="end">
-                              <ion-button (click)="closeSubModal()">Close</ion-button>
-                            </ion-buttons>
-                          </ion-toolbar>
-                        </ion-header>
-                        <ion-content class="ion-padding">
-                          <ion-item>
-                            <ion-input label="Name" [value]="timeline[selectedEvent].children[selectedSubEvent].name" #nameInputSub></ion-input>
-                          </ion-item>
-                          <ion-item>
-                            <ion-input label="Hours" type="number" [value]="timeline[selectedEvent].children[selectedSubEvent].duration.hours" #hoursInputSub></ion-input>
-                          </ion-item>
-                          <ion-item>
-                            <ion-input label="Minutes" type="number" [value]="timeline[selectedEvent].children[selectedSubEvent].duration.minutes" #minutesInputSub></ion-input>
-                          </ion-item>
-                        </ion-content>
-
-                        <ion-footer>
-                          <ion-toolbar>
-                            <div class="container">
-                              <ion-button (click)="submitSubChanges()"> Submit </ion-button>
-                            </div>
-                          </ion-toolbar>
-                        </ion-footer>
-
-                      </ng-template>
-                    </ion-modal>
-
-                  </ion-reorder-group>
-                </ion-list>
-              </div>
-
-            </ion-content>
+                            <ion-content class="ion-padding">
+                              <ion-item>
+                                <ion-input label="Name" [value]="timeline[selectedEvent].children[selectedSubEvent].name" #nameInputSub></ion-input>
+                              </ion-item>
+                              <ion-item>
+                                <ion-input label="Hours" type="number" [value]="timeline[selectedEvent].children[selectedSubEvent].duration.hours" #hoursInputSub></ion-input>
+                              </ion-item>
+                              <ion-item>
+                                <ion-input label="Minutes" type="number" [value]="timeline[selectedEvent].children[selectedSubEvent].duration.minutes" #minutesInputSub></ion-input>
+                              </ion-item>
+                            </ion-content>
+  
+                          <ion-footer>
+                            <ion-toolbar>
+                              <div class="container">
+                                <ion-button (click)="submitSubChanges()"> Submit </ion-button>
+                              </div>
+                            </ion-toolbar>
+                          </ion-footer>
+  
+                        </ng-template>
+                      </ion-modal>
+  
+                    </ion-reorder-group>
+                  </ion-list>
+                </div>
+  
+              </ion-content>
 
             <ion-footer>
               <ion-toolbar>

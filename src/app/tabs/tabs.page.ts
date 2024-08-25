@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { TimelineEvent } from '../timeline-event';
+import { TimelineEvent } from '../interfaces/timeline-event';
 import { IonTabs } from '@ionic/angular';
 
 @Component({

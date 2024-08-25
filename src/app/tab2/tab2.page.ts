@@ -1,9 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { IonDatetime, IonInput, IonItemSliding, ItemReorderEventDetail } from '@ionic/angular';
-import { TimelineEvent } from '../timeline-event';
+import { TimelineEvent } from '../interfaces/timeline-event';
 import { TabsPage } from '../tabs/tabs.page';
 import { utcToZonedTime } from 'date-fns-tz';
-import { formatISO } from 'date-fns';
 
 
 @Component({
@@ -93,10 +92,6 @@ export class Tab2Page {
   // Handle reordering of event's children
   handleReorderSub(ev: CustomEvent<ItemReorderEventDetail>){
     this.timeline[this.selectedEvent].children = ev.detail.complete(this.timeline[this.selectedEvent].children)
-  }
-
-  changeDateState(dateObj: IonDatetime){
-    dateObj.disabled = !dateObj.disabled;
   }
 
   // Handle reordering of timeline
@@ -211,6 +206,7 @@ export class Tab2Page {
 
   // Saves start date with correct time zone in TabsPage
   updateDate(){
+    console.log(this.dateMain.value)
     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const rawDate = new Date(
       parseInt((this.dateMain.value as string).substring(0,4)),       // year
@@ -315,12 +311,11 @@ export class Tab2Page {
   }
 
   // TODO change start date for sub-events (take parent start date)
-  calculateExpectedStart(timeline: TimelineEvent[], index: number){
-    let result = this.startdate;
+  calculateExpectedStart(timeline: TimelineEvent[], index: number, start: Date){
+    let result = start;
     for(let i = 0; i < index; i++){
       result = this.datePlusDuration(result, timeline[i].duration);
     }
     return result;
   }
-
 }

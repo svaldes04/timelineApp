@@ -1,0 +1,89 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Edit {{displayEventValue.type}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-alert [isOpen]="isAlertOpen" header="There was a problem" message="Event can't start after it ends. Please change the start or end date" [buttons]="['Dismiss']" (didDismiss)="isAlertOpen = false" ></ion-alert>
+  <div class="content">
+    @if(previousEventValue !== null){
+      <div class="preview">
+        <div class="timeline-point"></div>
+        <div class="dotted-line"></div>
+        <div class="timeline-point"></div>
+        <div class="dotted-line"></div>
+        <div class="timeline-point"></div>
+      </div>
+    }
+    <div class="body">
+      <div class="input-container">
+        <ion-input label="Name" [value]="displayEventValue.name" labelPlacement="floating" #nameInput></ion-input>
+      </div>
+      <div class="datetime-container">
+        <ion-label>Start:</ion-label>
+        <ion-datetime-button datetime="starttime-{{getRouteId()}}"></ion-datetime-button>
+      </div>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="starttime-{{getRouteId()}}" [value]="dateToString(displayEventValue.start)" [max]="dateToString(displayEventValue.end)" (ionChange)="startChange($event)" #startInput></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    
+      <div class="datetime-container">
+        <ion-label>End:</ion-label>
+        <ion-datetime-button datetime="endtime-{{getRouteId()}}"></ion-datetime-button>
+      </div>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="endtime-{{getRouteId()}}" [value]="dateToString(displayEventValue.end)" [min]="dateToString(displayEventValue.start)" (ionChange)="endChange($event)" #endInput></ion-datetime>
+        </ng-template>
+      </ion-modal>
+      
+      @if(displayEventValue.type === "event"){
+        <div class="container">
+          <ion-list>
+            <ion-label id="sub-events-title">Sub-Events</ion-label>
+            <div class="button-container">
+              <ion-button class="button" (click)="placeholder()">Add sub-event</ion-button>
+            </div>
+            
+            <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">
+      
+              <!--  TODO: Make better with reorder-group OR create a separe reorder screen -->
+              @for(child of displayEventValue.children; track $index){
+                <ion-item-sliding #timelineEditorSub>
+              
+                  <ion-item [lines]="$last ? 'none' : 'full' ">
+                    <ion-label>{{ child.name }}</ion-label>
+                    <ion-reorder slot="end"></ion-reorder>
+                  </ion-item>
+              
+                  <ion-item-options side="end">
+                    <ion-item-option color="warning" (click)="openSubEvent($index)">Edit</ion-item-option>
+                    <ion-item-option color="danger" (click)="placeholder()">Delete</ion-item-option>
+                  </ion-item-options>
+                </ion-item-sliding>
+              } @empty {
+                <ion-item>
+                    <ion-label> No sub-events</ion-label>
+                </ion-item>
+              }
+            </ion-reorder-group>
+          </ion-list>
+  
+        </div>
+      }
+
+    </div>
+  </div>
+</ion-content>
+
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="button-container">
+      <ion-button class="button" (click)="submitChanges()"> Submit </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

@@ -6,8 +6,8 @@
     justify-content: center;
     padding-top: 20px;
 }
-#eventButton{
-    padding: 15px;
+.button{
+    padding: 10px 10px 0px 10px;
 }
 .modal-label{
     font-size: larger;
@@ -16,4 +16,9 @@
 }
 .time{
     color: rgb(156, 156, 156);
+}
+.edit-area{
+    height: 300px;
+    width: 100%;
+    background-color: red;
 }
